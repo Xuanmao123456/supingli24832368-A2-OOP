@@ -1,4 +1,3 @@
-
 /**
  * Abstract base class representing a general person in the theme park system.
  * Contains common attributes (name, age, email) for all person types (Employee/Visitor).
