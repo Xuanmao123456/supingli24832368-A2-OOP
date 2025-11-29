@@ -1,217 +1,401 @@
 import java.util.Scanner;
 
 /**
- * Main class for PROG2004 A2 Theme Park Management System.
- * Interactive menu for testing all parts (Part3 to Part7) of the assignment.
+ * Main class: Theme Park Management System Test Tool
+ * Supports interactive function selection and runtime visitor information input
+ * Optimized: Replace colored symbols with plain text check/cross marks for universal display
  */
 public class AssignmentTwo {
     public static void main(String[] args) {
         AssignmentTwo assignment = new AssignmentTwo();
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in); // Global Scanner for reuse
 
-        // Interactive menu display
+        // Display interactive menu
         System.out.println("=== Theme Park Management System - Test Tool ===");
         System.out.println("Please select a function to test (enter number 1-7):");
-        System.out.println("1 - Part3: Waiting Queue (Add/Remove/Print)");
-        System.out.println("2 - Part4A: Ride History (Add/Check/Count/Print)");
-        System.out.println("3 - Part4B: Ride History Sort (Members First + Age Ascending)");
-        System.out.println("4 - Part5: Run One Ride Cycle (Max Rider + Cycle Count)");
+        System.out.println("1 - Part3: Waiting Queue (Add/Remove/Print with manual visitor input)");
+        System.out.println("2 - Part4A: Ride History (Add/Check/Count with manual visitor input)");
+        System.out.println("3 - Part4B: Ride History Sort (Sort with manual visitor input)");
+        System.out.println("4 - Part5: Run Single Ride Cycle (Manual queue visitor input)");
         System.out.println("5 - Part6: Export Ride History to CSV File");
         System.out.println("6 - Part7: Import Ride History from CSV File");
         System.out.println("7 - Exit Program");
         System.out.print("Your selection (1-7): ");
 
-        // Handle user input
+        // Handle user input with exception validation
         int choice;
         try {
             choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline character to avoid input exceptions
         } catch (Exception e) {
-            System.out.println("Error: Invalid input! Please enter a number between 1 and 7.");
+            System.out.println("✗ Error: Invalid input! Please enter a number between 1 and 7");
             scanner.close();
             return;
         }
 
-        // Execute selected function
+        // Execute selected function (pass global Scanner)
         switch (choice) {
             case 1:
-                assignment.partThree();
+                assignment.partThree(scanner);
                 break;
             case 2:
-                assignment.partFourA();
+                assignment.partFourA(scanner);
                 break;
             case 3:
-                assignment.partFourB();
+                assignment.partFourB(scanner);
                 break;
             case 4:
-                assignment.partFive();
+                assignment.partFive(scanner);
                 break;
             case 5:
-                assignment.partSix();
+                assignment.partSix(scanner);
                 break;
             case 6:
-                assignment.partSeven();
+                assignment.partSeven(scanner);
                 break;
             case 7:
-                System.out.println("Program exited successfully!");
+                System.out.println("✓ Program exited successfully!");
                 break;
             default:
-                System.out.println("Error: Invalid selection! Please enter a number between 1 and 7.");
+                System.out.println("✗ Error: Invalid selection! Please enter a number between 1 and 7");
         }
 
-        scanner.close();
+        scanner.close(); // Close Scanner uniformly at last
     }
 
     /**
-     * Test Part3: Waiting Queue Functionality
+     * Utility method: Add a single visitor interactively (reuse Scanner to avoid duplicate creation)
+     * @param scanner Global Scanner object
+     * @return Visitor object created by user input
      */
-    public void partThree() {
+    private Visitor addVisitorInteractively(Scanner scanner) {
+        System.out.println("\n--- Please enter visitor information ---");
+
+        // 1. Input name (non-empty validation)
+        System.out.print("Name: ");
+        String name = scanner.nextLine().trim();
+        while (name.isEmpty()) {
+            System.out.println("✗ Name cannot be empty!");
+            System.out.print("Name: ");
+            name = scanner.nextLine().trim();
+        }
+
+        // 2. Input age (validation: integer + ≥0)
+        int age = -1;
+        while (age < 0) {
+            System.out.print("Age (≥0): ");
+            String ageInput = scanner.nextLine().trim();
+            try {
+                age = Integer.parseInt(ageInput);
+                if (age < 0) {
+                    System.out.println("✗ Age cannot be negative!");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("✗ Age must be a number!");
+            }
+        }
+
+        // 3. Input email (non-empty validation)
+        System.out.print("Email: ");
+        String email = scanner.nextLine().trim();
+        while (email.isEmpty()) {
+            System.out.println("✗ Email cannot be empty!");
+            System.out.print("Email: ");
+            email = scanner.nextLine().trim();
+        }
+
+        // 4. Input visitor ID (non-empty validation)
+        System.out.print("Visitor ID (Example: VIS001): ");
+        String visitorId = scanner.nextLine().trim();
+        while (visitorId.isEmpty()) {
+            System.out.println("✗ Visitor ID cannot be empty!");
+            System.out.print("Visitor ID: ");
+            visitorId = scanner.nextLine().trim();
+        }
+
+        // 5. Input membership status (validation: y/n)
+        boolean isMember = false;
+        while (true) {
+            System.out.print("Is member (y/n): ");
+            String memberInput = scanner.nextLine().trim().toLowerCase();
+            if (memberInput.equals("y")) {
+                isMember = true;
+                break;
+            } else if (memberInput.equals("n")) {
+                isMember = false;
+                break;
+            } else {
+                System.out.println("✗ Only y or n is allowed!");
+            }
+        }
+
+        // Create and return visitor object
+        Visitor visitor = new Visitor(name, age, email, visitorId, isMember);
+        System.out.println("✓ Visitor created successfully: " + name + " (ID: " + visitorId + ")");
+        return visitor;
+    }
+
+    /**
+     * Part3: Waiting Queue Test (supports manual visitor input)
+     * @param scanner Global Scanner
+     */
+    public void partThree(Scanner scanner) {
         System.out.println("\n=== Part3: Waiting Queue Test ===");
-        Employee operator = new Employee("John Doe", 30, "john@themepark.com", "EMP001", "Ride Operator");
+        // Create operator and ride facility
+        Employee operator = new Employee("John Doe", 35, "john@themepark.com", "EMP001", "Ride Operator");
         Ride rollerCoaster = new Ride("Roller Coaster", "Thrill Ride", operator);
 
-        Visitor v1 = new Visitor("Alice", 25, "alice@test.com", "VIS001", true);
-        Visitor v2 = new Visitor("Bob", 30, "bob@test.com", "VIS002", false);
-        Visitor v3 = new Visitor("Charlie", 22, "charlie@test.com", "VIS003", true);
-        Visitor v4 = new Visitor("Diana", 28, "diana@test.com", "VIS004", false);
-        Visitor v5 = new Visitor("Ethan", 35, "ethan@test.com", "VIS005", true);
+        // Let user select number of visitors to add
+        int visitorCount = 0;
+        while (visitorCount <= 0) {
+            System.out.print("Enter number of visitors to add to queue (≥1): ");
+            String countInput = scanner.nextLine().trim();
+            try {
+                visitorCount = Integer.parseInt(countInput);
+                if (visitorCount <= 0) {
+                    System.out.println("✗ Count must be ≥1!");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("✗ Count must be a number!");
+            }
+        }
 
-        rollerCoaster.addVisitorToQueue(v1);
-        rollerCoaster.addVisitorToQueue(v2);
-        rollerCoaster.addVisitorToQueue(v3);
-        rollerCoaster.addVisitorToQueue(v4);
-        rollerCoaster.addVisitorToQueue(v5);
+        // Add specified number of visitors in loop
+        for (int i = 0; i < visitorCount; i++) {
+            System.out.println("\n--- Adding " + (i + 1) + "th visitor ---");
+            Visitor visitor = addVisitorInteractively(scanner);
+            rollerCoaster.addVisitorToQueue(visitor);
+        }
 
+        // Print queue status
+        System.out.println("\n=== Current Queue Status ===");
         rollerCoaster.printQueue();
+
+        // Remove first visitor from queue
+        System.out.println("\n=== Remove First Visitor from Queue ===");
         rollerCoaster.removeVisitorFromQueue();
 
-        System.out.println("\nAfter removing one visitor:");
+        // Print queue status after removal
+        System.out.println("\n=== Queue Status After Removal ===");
         rollerCoaster.printQueue();
     }
 
     /**
-     * Test Part4A: Ride History Functionality
+     * Part4A: Ride History Test (supports manual visitor input)
+     * @param scanner Global Scanner
      */
-    public void partFourA() {
+    public void partFourA(Scanner scanner) {
         System.out.println("\n=== Part4A: Ride History Test ===");
-        Employee operator = new Employee("Jane Smith", 28, "jane@themepark.com", "EMP002", "Ride Operator");
+        // Create operator and ride facility
+        Employee operator = new Employee("Jane Smith", 32, "jane@themepark.com", "EMP002", "Ride Operator");
         Ride thunderstorm = new Ride("Thunderstorm", "Water Ride", operator);
 
-        Visitor v1 = new Visitor("Frank", 24, "frank@test.com", "VIS006", true);
-        Visitor v2 = new Visitor("Grace", 27, "grace@test.com", "VIS007", false);
-        Visitor v3 = new Visitor("Henry", 29, "henry@test.com", "VIS008", true);
-        Visitor v4 = new Visitor("Ivy", 23, "ivy@test.com", "VIS009", false);
-        Visitor v5 = new Visitor("Jack", 32, "jack@test.com", "VIS010", true);
+        // Let user select number of visitors to add
+        int visitorCount = 0;
+        while (visitorCount <= 0) {
+            System.out.print("Enter number of visitors to add to history (≥1): ");
+            String countInput = scanner.nextLine().trim();
+            try {
+                visitorCount = Integer.parseInt(countInput);
+                if (visitorCount <= 0) {
+                    System.out.println("✗ Count must be ≥1!");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("✗ Count must be a number!");
+            }
+        }
 
-        thunderstorm.addVisitorToHistory(v1);
-        thunderstorm.addVisitorToHistory(v2);
-        thunderstorm.addVisitorToHistory(v3);
-        thunderstorm.addVisitorToHistory(v4);
-        thunderstorm.addVisitorToHistory(v5);
+        // Add specified number of visitors in loop
+        Visitor targetVisitor = null; // Target visitor for subsequent query
+        for (int i = 0; i < visitorCount; i++) {
+            System.out.println("\n--- Adding " + (i + 1) + "th visitor ---");
+            Visitor visitor = addVisitorInteractively(scanner);
+            thunderstorm.addVisitorToHistory(visitor);
+            // Save first visitor as query example
+            if (i == 0) {
+                targetVisitor = visitor;
+            }
+        }
 
-        boolean isInHistory = thunderstorm.checkVisitorFromHistory(v3);
-        System.out.println("\nIs visitor VIS008-Henry in history? " + (isInHistory ? "Yes" : "No"));
+        // Check if target visitor exists in history
+        if (targetVisitor != null) {
+            System.out.println("\n=== Check Visitor in History ===");
+            boolean isInHistory = thunderstorm.checkVisitorFromHistory(targetVisitor);
+            System.out.println("Is visitor " + targetVisitor.getVisitorId() + "-" + targetVisitor.getName() + " in history: " + (isInHistory ? "Yes" : "No"));
+        }
+
+        // Print history statistics and details
+        System.out.println("\n=== Ride History Statistics ===");
         System.out.println("Total visitors in ride history: " + thunderstorm.numberOfVisitors());
+        System.out.println("\n=== Ride History Details ===");
         thunderstorm.printRideHistory();
     }
 
     /**
-     * Test Part4B: Ride History Sort
+     * Part4B: Ride History Sort Test (supports manual visitor input)
+     * @param scanner Global Scanner
      */
-    public void partFourB() {
+    public void partFourB(Scanner scanner) {
         System.out.println("\n=== Part4B: Ride History Sort Test ===");
-        Employee operator = new Employee("Mike Wilson", 33, "mike@themepark.com", "EMP003", "Ride Operator");
+        // Create operator and ride facility
+        Employee operator = new Employee("Mike Wilson", 30, "mike@themepark.com", "EMP003", "Ride Operator");
         Ride ferrisWheel = new Ride("Ferris Wheel", "Family Ride", operator);
 
-        Visitor v1 = new Visitor("Lisa", 26, "lisa@test.com", "VIS011", false);
-        Visitor v2 = new Visitor("Mark", 22, "mark@test.com", "VIS012", true);
-        Visitor v3 = new Visitor("Nancy", 30, "nancy@test.com", "VIS013", true);
-        Visitor v4 = new Visitor("Oscar", 28, "oscar@test.com", "VIS014", false);
-        Visitor v5 = new Visitor("Penny", 24, "penny@test.com", "VIS015", true);
+        // Let user select number of visitors to add
+        int visitorCount = 0;
+        while (visitorCount <= 0) {
+            System.out.print("Enter number of visitors to add to history (≥1): ");
+            String countInput = scanner.nextLine().trim();
+            try {
+                visitorCount = Integer.parseInt(countInput);
+                if (visitorCount <= 0) {
+                    System.out.println("✗ Count must be ≥1!");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("✗ Count must be a number!");
+            }
+        }
 
-        ferrisWheel.addVisitorToHistory(v1);
-        ferrisWheel.addVisitorToHistory(v2);
-        ferrisWheel.addVisitorToHistory(v3);
-        ferrisWheel.addVisitorToHistory(v4);
-        ferrisWheel.addVisitorToHistory(v5);
+        // Add specified number of visitors in loop
+        for (int i = 0; i < visitorCount; i++) {
+            System.out.println("\n--- Adding " + (i + 1) + "th visitor ---");
+            Visitor visitor = addVisitorInteractively(scanner);
+            ferrisWheel.addVisitorToHistory(visitor);
+        }
 
-        System.out.println("\nRide history before sorting:");
+        // Print history before sorting
+        System.out.println("\n=== Ride History Before Sorting ===");
         ferrisWheel.printRideHistory();
+
+        // Execute sorting
+        System.out.println("\n=== Execute Sorting ===");
         ferrisWheel.sortRideHistory();
 
-        System.out.println("\nRide history after sorting (Members first + Age ascending):");
+        // Print history after sorting
+        System.out.println("\n=== Ride History After Sorting ===");
         ferrisWheel.printRideHistory();
     }
 
     /**
-     * Test Part5: Run One Ride Cycle
+     * Part5: Ride Cycle Test (supports manual queue visitor input)
+     * @param scanner Global Scanner
      */
-    public void partFive() {
+    public void partFive(Scanner scanner) {
         System.out.println("\n=== Part5: Ride Cycle Test ===");
-        Employee operator = new Employee("Sarah Brown", 29, "sarah@themepark.com", "EMP004", "Ride Operator");
+        // Create operator and ride facility (max rider: 3)
+        Employee operator = new Employee("Sarah Brown", 28, "sarah@themepark.com", "EMP004", "Ride Operator");
         Ride logFlume = new Ride("Log Flume", "Water Ride", operator, 3);
 
-        for (int i = 1; i <= 10; i++) {
-            Visitor visitor = new Visitor(
-                    "Visitor" + i,
-                    20 + i,
-                    "visitor" + i + "@test.com",
-                    "VIS0" + (15 + i),
-                    i % 2 == 0
-            );
+        // Let user select number of visitors to add to queue
+        int visitorCount = 0;
+        while (visitorCount <= 0) {
+            System.out.print("Enter number of visitors to add to queue (≥1): ");
+            String countInput = scanner.nextLine().trim();
+            try {
+                visitorCount = Integer.parseInt(countInput);
+                if (visitorCount <= 0) {
+                    System.out.println("✗ Count must be ≥1!");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("✗ Count must be a number!");
+            }
+        }
+
+        // Add specified number of visitors to queue in loop
+        for (int i = 0; i < visitorCount; i++) {
+            System.out.println("\n--- Adding " + (i + 1) + "th visitor to queue ---");
+            Visitor visitor = addVisitorInteractively(scanner);
             logFlume.addVisitorToQueue(visitor);
         }
 
-        System.out.println("Queue before running cycle:");
+        // Print queue status before cycle
+        System.out.println("\n=== Queue Status Before Cycle ===");
         logFlume.printQueue();
+
+        // Run single cycle
         logFlume.runOneCycle();
 
-        System.out.println("\nQueue after running cycle:");
+        // Print queue status after cycle
+        System.out.println("\n=== Queue Status After Cycle ===");
         logFlume.printQueue();
-        System.out.println("\nRide history (new visitors from this cycle):");
+
+        // Print new history from this cycle
+        System.out.println("\n=== New Ride History from This Cycle ===");
         logFlume.printRideHistory();
+
+        // Print total cycle count
+        System.out.println("\n=== Cycle Statistics ===");
         System.out.println("Total cycles run: " + logFlume.getNumOfCycles());
     }
 
     /**
-     * Test Part6: Export to CSV
-     * Note: Replace the file path with your actual desktop path
+     * Part6: CSV Export Test (add visitors to history first)
+     * @param scanner Global Scanner
      */
-    public void partSix() {
+    public void partSix(Scanner scanner) {
         System.out.println("\n=== Part6: Export Ride History to CSV ===");
+        // Create operator and ride facility
         Employee operator = new Employee("David Clark", 31, "david@themepark.com", "EMP005", "Ride Operator");
         Ride bumperCars = new Ride("Bumper Cars", "Family Ride", operator, 4);
 
-        Visitor v1 = new Visitor("Quinn", 25, "quinn@test.com", "VIS026", true);
-        Visitor v2 = new Visitor("Rachel", 27, "rachel@test.com", "VIS027", false);
-        Visitor v3 = new Visitor("Sam", 23, "sam@test.com", "VIS028", true);
-        Visitor v4 = new Visitor("Tina", 29, "tina@test.com", "VIS029", false);
-        Visitor v5 = new Visitor("Umar", 26, "umar@test.com", "VIS030", true);
+        // Add visitors to history first
+        int visitorCount = 0;
+        while (visitorCount <= 0) {
+            System.out.print("Enter number of visitors to add to history (≥1): ");
+            String countInput = scanner.nextLine().trim();
+            try {
+                visitorCount = Integer.parseInt(countInput);
+                if (visitorCount <= 0) {
+                    System.out.println("✗ Count must be ≥1!");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("✗ Count must be a number!");
+            }
+        }
+        for (int i = 0; i < visitorCount; i++) {
+            System.out.println("\n--- Adding " + (i + 1) + "th visitor ---");
+            Visitor visitor = addVisitorInteractively(scanner);
+            bumperCars.addVisitorToHistory(visitor);
+        }
 
-        bumperCars.addVisitorToHistory(v1);
-        bumperCars.addVisitorToHistory(v2);
-        bumperCars.addVisitorToHistory(v3);
-        bumperCars.addVisitorToHistory(v4);
-        bumperCars.addVisitorToHistory(v5);
+        // Let user input CSV save path
+        System.out.print("\nEnter CSV file save path (Example: C:/Users/YourUsername/Desktop/rideHistory.csv): ");
+        String filePath = scanner.nextLine().trim();
+        while (filePath.isEmpty()) {
+            System.out.println("✗ Path cannot be empty!");
+            System.out.print("CSV file save path: ");
+            filePath = scanner.nextLine().trim();
+        }
 
-        // Replace with your actual file path (e.g., "C:/Users/YourName/Desktop/rideHistory.csv")
-        String filePath = "C:/Users/YourUsername/Desktop/rideHistory.csv";
+        // Export to CSV
         bumperCars.exportRideHistory(filePath);
     }
 
     /**
-     * Test Part7: Import from CSV
-     * Note: Use the same file path as Part6
+     * Part7: CSV Import Test
+     * @param scanner Global Scanner
      */
-    public void partSeven() {
+    public void partSeven(Scanner scanner) {
         System.out.println("\n=== Part7: Import Ride History from CSV ===");
+        // Create empty ride facility
         Ride importRide = new Ride("Import Test Ride", "Test", null, 2);
 
-        // Replace with your actual file path (same as Part6)
-        String filePath = "C:/Users/YourUsername/Desktop/rideHistory.csv";
+        // Let user input CSV file path
+        System.out.print("Enter CSV file path (Example: C:/Users/YourUsername/Desktop/rideHistory.csv): ");
+        String filePath = scanner.nextLine().trim();
+        while (filePath.isEmpty()) {
+            System.out.println("✗ Path cannot be empty!");
+            System.out.print("CSV file path: ");
+            filePath = scanner.nextLine().trim();
+        }
+
+        // Import from CSV
         importRide.importRideHistory(filePath);
 
-        System.out.println("\nTotal visitors imported: " + importRide.numberOfVisitors());
-        System.out.println("Imported visitors details:");
+        // Verify import result
+        System.out.println("\n=== Import Result Verification ===");
+        System.out.println("Total visitors imported: " + importRide.numberOfVisitors());
+        System.out.println("\n=== Imported Visitor Details ===");
         importRide.printRideHistory();
     }
 }
