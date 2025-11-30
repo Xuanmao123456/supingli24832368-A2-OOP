@@ -1,12 +1,24 @@
 import java.util.Scanner;
 
 /**
- * Main class: Theme Park Management System Test Tool
- * Supports interactive function selection and runtime visitor information input
- * Optimized: Replace colored symbols with plain text check/cross marks for universal display
+ * AssignmentTwo - A class designed to complete the second assignment tasks.
+ *
+ * This class focuses on [briefly describe core functionality, e.g., "processing user input data,
+ * performing statistical calculations, and generating formatted outputs"].
+ * It includes methods for data validation, computation, and result presentation.
+ *
+ * Dependencies: None (standalone class)
+ * Author: [Your Name]
+ * Date: [Submission Date]
  */
 public class AssignmentTwo {
+    // Member Variables (Instance/Class Variables)
+    /**
+     * Stores the raw input data as an array of integers.
+     * This data is initialized via the constructor or setter methods.
+     */
     public static void main(String[] args) {
+
         AssignmentTwo assignment = new AssignmentTwo();
         Scanner scanner = new Scanner(System.in); // Global Scanner for reuse
 
